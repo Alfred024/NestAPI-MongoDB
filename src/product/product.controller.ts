@@ -1,5 +1,13 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+//Nest modules 
+import { 
+    Controller, 
+    Get, Post, Patch, Delete,
+    Body, Param, ParseIntPipe, ParseUUIDPipe, 
+} from '@nestjs/common';
+//Service
 import { ProductService } from './product.service';
+//DTO
+import { PostProductDto } from './dto/post-product.dto';
 
 @Controller('product')
 export class ProductController {
@@ -13,12 +21,12 @@ export class ProductController {
     }
 
     @Get(':id')
-    getProductById(@Param('id', ParseIntPipe) id :number){
+    getProductById(@Param('id', new ParseUUIDPipe({version: '4'})) id : string){
         return this.productService.findById(id);
     }
 
     @Post()
-    postProduct(@Body() body : any ){
+    postProduct(@Body() body : PostProductDto ){
         return body;
     }
 
