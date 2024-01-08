@@ -1,6 +1,11 @@
+import { IsNumber, IsString } from "class-validator"
+
 export class PostProductDto{
-    readonly id: String
+
+    @IsString()
     readonly product: String
+    @IsNumber()
     readonly price: Number
+    @IsString()
     readonly category:String 
 }
