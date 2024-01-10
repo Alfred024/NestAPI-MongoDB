@@ -1,8 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { PatchUserDto, PostUserDto } from "./dto";
+import { User } from "./interfaces/user.interface";
 
 @Injectable()
 export class UserService{
+
+    private users : User[] = [];
+
     findAll(){
         
     }
@@ -21,5 +25,9 @@ export class UserService{
 
     deleteUserById(id : String){
 
+    }
+
+    fillUsersWithSeedData(users : User[]){
+        this.users = users;
     }
 }

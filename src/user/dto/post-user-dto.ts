@@ -10,4 +10,6 @@ export class PostUserDto{
     readonly second_last_name : String
     @IsEmail()
     readonly email : String
+    @IsString()
+    readonly password : String
 }

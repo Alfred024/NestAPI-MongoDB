@@ -6,12 +6,7 @@ import { PostProductDto, PatchProductDto } from './dto/product-dto';
 
 @Injectable()
 export class ProductService{
-    private products: Product[] = [
-        {id: uuidv4(), product: 'Chancla', price: 20, category: 'clothes'},
-        {id: uuidv4(), product: 'Chamarrin', price: 500, category: 'clothes'},
-        {id: uuidv4(), product: 'Tenis', price: 1000, category: 'clothes'},
-        {id: uuidv4(), product: 'Gorro', price: 200, category: 'clothes'},
-    ];
+    private products: Product[] = [];
 
     findAll(){
         return this.products;
@@ -59,5 +54,9 @@ export class ProductService{
             }
         });
         return productToDelete;
+    }
+
+    fillProductsWithSeedData(products : Product[]){
+        this.products = products;
     }
 }
