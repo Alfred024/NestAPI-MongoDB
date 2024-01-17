@@ -2,15 +2,15 @@
 import { Module } from '@nestjs/common';
 import { ProductModule } from './product/product.module';
 import { UserModule } from './user/user.module';
-import { SeedModule } from './seed/seed.module';
+import { OrderModule } from './order/order.module';
 // Module for serve static file
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 // Module for DB
 import { MongooseModule } from '@nestjs/mongoose';
+import { PokemonModule } from './pokemon/pokemon.module';
 
-// B.D's relacional: product, user, order, sale, sale_detail, transaccion, 
-// B.D's no relacional: 
+// B.D's no relacional: product, user, order, sale, shopping_cart
 
 @Module({
   imports: [
@@ -20,9 +20,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     // MongoDriver
     MongooseModule.forRoot('mongodb://localhost:27017/ecommerce'),
     // Api modules
-    ProductModule, UserModule, SeedModule
+    ProductModule, UserModule, OrderModule, PokemonModule
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

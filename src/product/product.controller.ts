@@ -1,45 +1,35 @@
-//Nest modules 
-import { 
-    Controller, 
-    Get, Post, Patch, Delete,
-    Body, Param, ParseUUIDPipe,   
-} from '@nestjs/common';
-//Service
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ProductService } from './product.service';
-//DTO
-import { PostProductDto, PatchProductDto, } from './dto/product-dto';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 
 @Controller('product')
 export class ProductController {
-    constructor (
-        readonly productService: ProductService
-    ){}
+  constructor(private readonly productService: ProductService) {}
 
-    @Get()
-    getProducts(){
-        return this.productService.findAll();
-    }
+  @Post()
+  create(@Body() createProductDto: CreateProductDto) {
+    return this.productService.create(createProductDto);
+  }
 
-    @Get(':id')
-    getProductById(@Param('id', new ParseUUIDPipe({version: '4'})) id : string){
-        return this.productService.findById(id);
-    }
+  @Get()
+  findAll() {
+    return this.productService.findAll();
+  }
 
-    @Post()
-    postProduct(@Body() body : PostProductDto ){
-        return this.productService.createProduct(body);
-    }
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.productService.findOne(term);
+  }
 
-    @Patch(':id')
-    patchProduct(
-        @Param('id', ParseUUIDPipe) id : string,
-        @Body() body : PatchProductDto )
-    {
-        return this.productService.updateProduct(id, body);
-    }
+  @Patch(':term')
+  update(@Param('term') term: string, @Body() updateProductDto: UpdateProductDto) {
+    return this.productService.update(term, updateProductDto);
+  }
 
-    @Delete(':id')
-    deleteProductById(@Param('id', ParseUUIDPipe) id : string){
-        return this.productService.deleteProduct(id);
-    }
+  @Delete(':id')
+  remove(@Param('id', ParseMongoIdPipe) id: string) {
+    return this.productService.remove(id);
+  }
 }

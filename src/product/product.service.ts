@@ -1,62 +1,88 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product } from './interfaces/product.interface';
-import { v4 as uuidv4 } from 'uuid';
-import { PostProductDto, PatchProductDto } from './dto/product-dto';
-
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { Product } from './entities/product.entity';
+import { Model, isValidObjectId } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class ProductService{
-    private products: Product[] = [];
+export class ProductService {
 
-    findAll(){
-        return this.products;
+  constructor(
+    @InjectModel(Product.name)
+    private readonly productModel : Model<Product>
+  ){}
+
+  async create(createProductDto: CreateProductDto) {
+    try {
+      createProductDto.product = createProductDto.product.toLowerCase();
+      const newProduct = this.productModel.create(createProductDto);
+      return newProduct;
+    } catch (error) {
+      this.handleExceptions( error );
+    }
+  }
+
+  async findAll() {
+    try {
+      return this.productModel.find();
+    } catch (error) {
+      this.handleExceptions( error );
+    }
+  }
+
+  async findOne(term: string) {
+    let product: Product;
+
+    if ( !isNaN(+term) ) {
+      product = await this.productModel.findOne({ no: term });
     }
 
-    findById(id: String){
-        const product = this.products.find(product => product.id === id);
-        if(!product) throw new NotFoundException(`Product with id: ${id} not found.`);
-        return product;
+    // MongoID
+    if ( !product && isValidObjectId( term ) ) {
+      product = await this.productModel.findById( term );
     }
 
-    createProduct( postProductDto : PostProductDto ){
-        const newProduct = {
-            'id': uuidv4(),
-            ...postProductDto,
-        } 
-
-        this.products.push(newProduct);
-        return {
-            'message': 'Product succesfully creted',
-            'newProduct': newProduct
-        }
+    // Name
+    if ( !product ) {
+      product = await this.productModel.findOne({ product: term.toLowerCase().trim() })
     }
 
-    updateProduct( id: String, patchProductDto : PatchProductDto){
-        let productToUpdate = this.findById(id);
-        this.products = this.products.map((product) =>{
-            if(product.id === id){
-                productToUpdate = {
-                    ...productToUpdate,
-                    ...patchProductDto, id
-                }
-                return productToUpdate;
-            }
-            return product;
-        }); 
-        return productToUpdate;
-    }
 
-    deleteProduct( id : String){
-        const productToDelete = this.findById(id);
-        this.products = this.products.map((product) =>{
-            if(product.id != productToDelete.id){
-                return product;
-            }
-        });
-        return productToDelete;
-    }
+    if ( !product ) 
+      throw new NotFoundException(`Product with id, product or no "${ term }" not found`);
+    
 
-    fillProductsWithSeedData(products : Product[]){
-        this.products = products;
+    return product;
+  }
+
+  async update(term: string, updateProductDto: UpdateProductDto) {
+    const product = await this.findOne( term );
+    if ( updateProductDto.product )
+      updateProductDto.product = updateProductDto.product.toLowerCase();
+    
+    try {
+      await product.updateOne( updateProductDto );
+      return { ...product.toJSON(), ...updateProductDto };
+      
+    } catch (error) {
+      this.handleExceptions( error );
     }
+  }
+
+  async remove(id: string) {
+    const { deletedCount } = await this.productModel.deleteOne({ _id: id });
+    if ( deletedCount === 0 )
+      throw new BadRequestException(`Product with id "${ id }" not found`);
+
+    return;
+  }
+
+  private handleExceptions( error: any ) {
+    if ( error.code === 11000 ) {
+      throw new BadRequestException(`Product exists in db ${ JSON.stringify( error.keyValue ) }`);
+    }
+    console.log(error);
+    throw new InternalServerErrorException(`Can't create Product - Check server logs`);
+  }
 }
